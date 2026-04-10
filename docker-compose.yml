@@ -1,5 +1,4 @@
 version: "3.9"
-
 services:
   station-service:
     build: ./services/station-service
@@ -7,6 +6,8 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql+asyncpg://cityflow:cityflow@postgres:5432/cityflow
+    volumes:
+      - ./services/station-service:/app
     depends_on:
       - postgres
       - redis
@@ -26,6 +27,22 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=cityflow
+    depends_on:
+      - prometheus
 
 volumes:
   postgres_data:

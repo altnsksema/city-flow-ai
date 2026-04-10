@@ -1,6 +1,7 @@
 from app.database import Base, engine
 from app.routers import stations
 from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 
 
 async def create_tables():
@@ -12,6 +13,8 @@ app = FastAPI(
     title="CityFlow Station Service",
     version="0.1.0",
 )
+
+Instrumentator().instrument(app).expose(app)
 
 
 @app.on_event("startup")

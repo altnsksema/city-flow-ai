@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "station-service"
+    static_configs:
+      - targets: ["station-service:8000"]
