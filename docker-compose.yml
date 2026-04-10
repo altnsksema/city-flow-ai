@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  station-service:
+    build: ./services/station-service
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://cityflow:cityflow@postgres:5432/cityflow
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: cityflow
+      POSTGRES_PASSWORD: cityflow
+      POSTGRES_DB: cityflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
