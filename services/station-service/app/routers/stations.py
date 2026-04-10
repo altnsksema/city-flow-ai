@@ -1,4 +1,5 @@
 from app.database import get_db
+from app.kafka_producer import send_station_update
 from app.models import Station, StationCreate, StationTable
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -29,3 +30,23 @@ async def create_station(station: StationCreate, db: AsyncSession = Depends(get_
     await db.commit()
     await db.refresh(db_station)
     return db_station
+
+
+@router.patch("/{station_id}/load", response_model=Station)
+async def update_station_load(
+    station_id: int,
+    current_load: float,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(StationTable).where(StationTable.id == station_id))
+    station = result.scalar_one_or_none()
+    if not station:
+        raise HTTPException(status_code=404, detail="İstasyon bulunamadı")
+
+    station.current_load = current_load
+    await db.commit()
+    await db.refresh(station)
+
+    await send_station_update(station_id, current_load)
+
+    return station
